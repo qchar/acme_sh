@@ -1,41 +1,55 @@
 ---
 - name: Check if cert has been created
   stat:
-    path: "{{ acme_sh_dir }}/{{ acme_sh_first_subject }}/{{ acme_sh_first_subject }}.cer"
+    path: '{{ acme_sh_dir }}/{{ acme_sh_first_subject }}/{{ acme_sh_first_subject }}.cer'
   register: cert
+
+- name: Issue acme.sh certs via http
+  command: >-
+    ./acme.sh --issue {{ subject_list }} -k {{ acme_sh_keylength }} --server {{ acme_sh_server }}
+      --standalone --httpport {{ acme_http_standalone_port }}
+  args:
+    chdir: '{{ acme_sh_dir }}'
+  vars:
+    subject_list: -d {{ acme_sh_subject_names | join(" -d ") }}
+  environment: '{{ acme_sh_env }}'
+  become: true
+  become_user: '{{ acme_sh_user }}'
+  register: certs_http
+  when: not cert.stat.exists and acme_use_http
 
 - name: Issue acme.sh certs via dns
   command: >-
     ./acme.sh --issue {{ subject_list }} -k {{ acme_sh_keylength }} --server {{ acme_sh_server }}
       --dns {{ acme_sh_dns_provider }} --dnssleep {{ acme_sh_dns_sleep }}
   args:
-    chdir: "{{ acme_sh_dir }}"
+    chdir: '{{ acme_sh_dir }}'
   vars:
     subject_list: -d {{ acme_sh_subject_names | join(" -d ") }}
-  environment: "{{ acme_sh_env }}"
-  become: yes
-  become_user: "{{ acme_sh_user }}"
-  register: certs
-  when: not cert.stat.exists
+  environment: '{{ acme_sh_env }}'
+  become: true
+  become_user: '{{ acme_sh_user }}'
+  register: certs_dns
+  when: not cert.stat.exists and not acme_use_http
 
 - name: Have certs.changed?
   debug:
-    msg: Changed? {{ certs.changed }}
+    msg: 'Changed? HTTP: {{certs_http.changed}} DNS: {{certs_dns.changed}}'
 
 - name: Ensure public cert dir exists with correct permissions
   file:
-    path: "{{ acme_sh_certs_public_dir }}"
+    path: '{{ acme_sh_certs_public_dir }}'
     state: directory
     owner: root
-    group: "{{ acme_sh_user }}"
+    group: '{{ acme_sh_user }}'
     mode: 0775
 
 - name: Ensure private cert dir exists with correct permissions
   file:
-    path: "{{ acme_sh_certs_private_dir }}"
+    path: '{{ acme_sh_certs_private_dir }}'
     state: directory
     owner: root
-    group: "{{ acme_sh_user }}"
+    group: '{{ acme_sh_user }}'
     mode: 0770
 
 - name: Install certs
@@ -45,11 +59,12 @@
       --fullchain-file {{ acme_sh_cert_fullchain_file }}
       --ca-file {{ acme_sh_cert_ca_file }}
       --reloadcmd "sudo {{ acme_sh_reload_cmd if (cert is defined and cert.stat.exists) else acme_sh_restart_cmd }}"
+      '{{"--ecc" if acme_sh_keylength is search("ec")}}'
       --debug
   args:
-    chdir: "{{ acme_sh_dir }}"
-  become: yes
-  become_user: "{{ acme_sh_user }}"
-  when: (certs is defined and certs.changed) or acme_sh_force_install
+    chdir: '{{ acme_sh_dir }}'
+  become: true
+  become_user: '{{ acme_sh_user }}'
+  when: (certs_http is defined and certs_dns is defined and (certs_http.changed or certs_dns.changed)) or acme_sh_force_install
   tags:
     - acme_sh_cert_install

@@ -12,10 +12,10 @@ A lot of defaults assume using nginx.
 
 Here are some defaults that control behavior:
 
-    acme_sh_autoupgrade: True
+    acme_sh_autoupgrade: true
     acme_sh_server: letsencrypt
-    acme_sh_notify: False
-    acme_sh_logging: False
+    acme_sh_notify: false
+    acme_sh_logging: false
     acme_sh_keylength: 4096
     acme_sh_dns_sleep: 120
 
@@ -45,7 +45,7 @@ here is the same example but with logging added:
     - hosts: servers
       roles:
         - role: thermistor.acme_sh
-          acme_sh_logging: True
+          acme_sh_logging: true
           acme_sh_subject_names:
             - example.com
             - www.example.com
@@ -59,7 +59,7 @@ and with mailgun notifications:
     - hosts: servers
       roles:
         - role: thermistor.acme_sh
-          acme_sh_notify: True
+          acme_sh_notify: true
           acme_sh_notify_hooks:
             - mailgun
           acme_sh_subject_names:
@@ -77,13 +77,13 @@ and with mailgun notifications:
 ## What happens under the hood
 
 If you generate a cert for example.com, during the install step this role will copy the `/var/lib/acme/.acme.sh/example.com/fullchain.cer` and install it as `/etc/nginx/certs/example.com.cer`. Note that it is installing the **fullchain**
- cert and renaming it, this is so that you can install multiple fullchain certs for different domains if necessary.
+cert and renaming it, this is so that you can install multiple fullchain certs for different domains if necessary.
 
 ## Troubleshooting
 
 If there are cert misconfiguration issues sometimes you can get into a wedged state where certs are not being reinstalled, you can force the certs to be reinstalled with:
 
-    ansible-playbook -i inventory playbook.yml -e "acme_sh_force_install=True" --tags acme_sh_cert_install
+    ansible-playbook -i inventory playbook.yml -e "acme_sh_force_install=true" --tags acme_sh_cert_install
 
 ## License
 
@@ -93,5 +93,5 @@ MIT
 
 We borrowed a lot from these alternatives:
 
-* [nickjj.acme_sh](https://galaxy.ansible.com/nickjj/acme_sh) - multi cert capable
-* [verosk.acme-sh](https://galaxy.ansible.com/verosk/acme-sh) - just install
+- [nickjj.acme_sh](https://galaxy.ansible.com/nickjj/acme_sh) - multi cert capable
+- [verosk.acme-sh](https://galaxy.ansible.com/verosk/acme-sh) - just install

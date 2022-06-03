@@ -5,38 +5,44 @@ acme_sh_git_version: master
 acme_sh_user_dir: /var/lib/acme
 acme_sh_dir: /var/lib/acme/.acme.sh
 
-acme_sh_autoupgrade: True
-acme_sh_server: letsencrypt
+acme_sh_autoupgrade: true
+# letsencrypt
+#acme_sh_server: https://acme-staging-v02.api.letsencrypt.org/directory
 
-acme_sh_notify: False
+acme_sh_server: https://acme-staging-v02.api.letsencrypt.org
+
+acme_sh_notify: false
 acme_sh_notify_level: 2
 acme_sh_notify_hooks:
   - mail
 
-acme_sh_logging: False
+acme_sh_logging: false
 acme_sh_log_level: 1
 acme_sh_logrotate_rotations: 50
 acme_sh_log_dir: /var/log/acme.sh
-acme_sh_log_file: "{{ acme_sh_log_dir }}/acme.sh.log"
+acme_sh_log_file: '{{ acme_sh_log_dir }}/acme.sh.log'
 
-acme_sh_keylength: 4096
+acme_sh_keylength: ec-4096
 acme_sh_dns_sleep: 120
 
 acme_sh_subject_names:
   - example.com
   - www.example.com
-acme_sh_first_subject: "{{ acme_sh_subject_names | first }}"
+acme_sh_first_subject: '{{ acme_sh_subject_names | first }}'
 acme_sh_dns_provider:
 acme_sh_env: {}
 
 acme_sh_certs_public_dir: /etc/nginx/certs
 acme_sh_certs_private_dir: /etc/nginx/private
 
-acme_sh_cert_fullchain_file: "{{ acme_sh_certs_public_dir }}/{{ acme_sh_first_subject }}.cer"
-acme_sh_cert_ca_file: "{{ acme_sh_certs_public_dir }}/ca.cer"
-acme_sh_cert_key_file: "{{ acme_sh_certs_private_dir }}/{{ acme_sh_first_subject }}.key"
+acme_sh_cert_fullchain_file: '{{ acme_sh_certs_public_dir }}/{{ acme_sh_first_subject }}.cer'
+acme_sh_cert_ca_file: '{{ acme_sh_certs_public_dir }}/ca.cer'
+acme_sh_cert_key_file: '{{ acme_sh_certs_private_dir }}/{{ acme_sh_first_subject }}.key'
 
 acme_sh_restart_cmd: /bin/systemctl restart nginx
 acme_sh_reload_cmd: /bin/systemctl reload nginx
 
-acme_sh_force_install: False
+acme_sh_force_install: false
+
+acme_http_standalone_port: 5500
+acme_use_http: true

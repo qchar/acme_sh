@@ -1,28 +1,28 @@
 ---
 - name: Install git dependency
   package:
-    update_cache: True
+    update_cache: true
     name: git
     state: present
 
 - name: Create user to run acme.sh
   user:
-    name: "{{ acme_sh_user }}"
-    home: "{{ acme_sh_user_dir }}"
-    system: True
+    name: '{{ acme_sh_user }}'
+    home: '{{ acme_sh_user_dir }}'
+    system: true
     shell: /bin/bash
     state: present
 
 - name: Set permissions on acme user home dir
   file:
-    path: "{{ acme_sh_user_dir }}"
+    path: '{{ acme_sh_user_dir }}'
     mode: 0700
 
 - name: Clone acme.sh repository
   git:
     repo: https://github.com/Neilpang/acme.sh.git
     dest: /usr/local/src/acme.sh
-    version: "{{ acme_sh_git_version }}"
+    version: '{{ acme_sh_git_version }}'
   register: git
 
 - name: Allow acme.sh user to restart nginx
@@ -38,20 +38,26 @@
     ./acme.sh --install
   args:
     chdir: /usr/local/src/acme.sh
-    creates: "{{ acme_sh_dir }}/acme.sh"
-  become: yes
-  become_user: "{{ acme_sh_user }}"
+    creates: '{{ acme_sh_dir }}/acme.sh'
+  become: true
+  become_user: '{{ acme_sh_user }}'
 
 - name: Enable acme.sh auto-upgrade
   lineinfile:
-    path: "{{ acme_sh_dir }}/account.conf"
-    regexp: "AUTO_UPGRADE="
+    path: '{{ acme_sh_dir }}/account.conf'
+    regexp: 'AUTO_UPGRADE='
     line: "AUTO_UPGRADE='1'"
   when: acme_sh_autoupgrade
 
 - name: Disable acme.sh auto-upgrade
   lineinfile:
-    path: "{{ acme_sh_dir }}/account.conf"
-    regexp: "AUTO_UPGRADE="
+    path: '{{ acme_sh_dir }}/account.conf'
+    regexp: 'AUTO_UPGRADE='
     line: "AUTO_UPGRADE='0'"
   when: not acme_sh_autoupgrade
+
+- name: Create .well-known directory
+  file:
+    dest: /var/www/.well-known
+    state: directory
+    mode: '0755'
